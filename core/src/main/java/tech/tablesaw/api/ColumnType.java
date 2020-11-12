@@ -39,6 +39,7 @@ public interface ColumnType {
   TextColumnType TEXT = TextColumnType.instance();
   SkipColumnType SKIP = SkipColumnType.instance();
 
+
   static void register(ColumnType type) {
     values.put(type.name(), type);
   }
