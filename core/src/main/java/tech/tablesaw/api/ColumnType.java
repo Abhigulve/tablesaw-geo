@@ -9,6 +9,7 @@ import tech.tablesaw.columns.SkipColumnType;
 import tech.tablesaw.columns.booleans.BooleanColumnType;
 import tech.tablesaw.columns.dates.DateColumnType;
 import tech.tablesaw.columns.datetimes.DateTimeColumnType;
+import tech.tablesaw.columns.geom.GeometryColumnType;
 import tech.tablesaw.columns.instant.InstantColumnType;
 import tech.tablesaw.columns.numbers.DoubleColumnType;
 import tech.tablesaw.columns.numbers.FloatColumnType;
@@ -38,7 +39,7 @@ public interface ColumnType {
   InstantColumnType INSTANT = InstantColumnType.instance();
   TextColumnType TEXT = TextColumnType.instance();
   SkipColumnType SKIP = SkipColumnType.instance();
-
+  GeometryColumnType GEOM = GeometryColumnType.instance();
 
   static void register(ColumnType type) {
     values.put(type.name(), type);
