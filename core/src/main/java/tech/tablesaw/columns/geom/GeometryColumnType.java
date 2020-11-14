@@ -1,6 +1,8 @@
 package tech.tablesaw.columns.geom;
 
+import com.vividsolutions.jts.geom.Geometry;
 import tech.tablesaw.api.ColumnType;
+import tech.tablesaw.api.GeometryColumn;
 import tech.tablesaw.columns.AbstractColumnParser;
 import tech.tablesaw.columns.AbstractColumnType;
 import tech.tablesaw.columns.Column;
@@ -29,11 +31,15 @@ public class GeometryColumnType extends AbstractColumnType {
 
   @Override
   public Column<?> create(String name) {
-    return null;
+    return GeometryColumn.create(name);
   }
 
   @Override
   public AbstractColumnParser<?> customParser(ReadOptions options) {
     return null;
+  }
+
+  public static boolean valueIsMissing(Geometry geometry) {
+    return geometry == null;
   }
 }

@@ -2,6 +2,9 @@ package tech.tablesaw.api;
 
 import com.google.common.base.Preconditions;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKBReader;
 import it.unimi.dsi.fastutil.ints.IntComparator;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -15,6 +18,8 @@ import tech.tablesaw.selection.Selection;
 public class GeometryColumn extends AbstractColumn<GeometryColumn, Geometry> {
 
   private List<Geometry> data;
+  final GeometryFactory geometryFactory = new GeometryFactory();
+  final WKBReader wkbReader = new WKBReader(geometryFactory);
   private final IntComparator rowComparator =
       (i, i1) -> {
         Geometry f1 = get(i);
@@ -35,6 +40,7 @@ public class GeometryColumn extends AbstractColumn<GeometryColumn, Geometry> {
 
   private GeometryColumn(String name) {
     super(GeometryColumnType.instance(), name);
+    this.data = new ArrayList<>();
   }
 
   @Override
@@ -120,7 +126,7 @@ public class GeometryColumn extends AbstractColumn<GeometryColumn, Geometry> {
 
   @Override
   public boolean isMissing(int rowNumber) {
-    return false;
+    return GeometryColumnType.valueIsMissing(data.get(rowNumber));
   }
 
   @Override
@@ -183,6 +189,10 @@ public class GeometryColumn extends AbstractColumn<GeometryColumn, Geometry> {
 
   @Override
   public Column<Geometry> set(int row, Geometry value) {
+    if (value == null) {
+      return setMissing(row);
+    }
+    data.set(row, value);
     return null;
   }
 
@@ -214,8 +224,21 @@ public class GeometryColumn extends AbstractColumn<GeometryColumn, Geometry> {
   }
 
   @Override
-  public Column<Geometry> appendObj(Object value) {
-    return null;
+  public GeometryColumn appendObj(Object value) {
+    if (value == null) {
+      appendMissing();
+    } else {
+      mil.nga.geopackage.geom.GeoPackageGeometryData g =
+          (mil.nga.geopackage.geom.GeoPackageGeometryData) value;
+      Geometry jtsGeometry = null;
+      try {
+        jtsGeometry = wkbReader.read(g.getWkbBytes());
+      } catch (ParseException e) {
+        e.printStackTrace();
+      }
+      data.add(jtsGeometry);
+    }
+    return this;
   }
 
   @Override
@@ -245,6 +268,6 @@ public class GeometryColumn extends AbstractColumn<GeometryColumn, Geometry> {
 
   @Override
   public int compare(Geometry geometry, Geometry t1) {
-    return 0;
+    return geometry.compareTo(t1);
   }
 }

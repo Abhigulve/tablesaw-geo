@@ -86,7 +86,6 @@ public class GeoPackageReader {
 
     // Setup the columns and add to the table
     for (int i = 1; i <= metaData.getColumnCount(); i++) {
-      System.out.println(metaData.getColumnType(i));
       ColumnType type =
           getColumnType(metaData.getColumnType(i), metaData.getScale(i), metaData.getPrecision(i));
       Preconditions.checkState(
@@ -101,9 +100,10 @@ public class GeoPackageReader {
 
     // Add the rows
     while (resultSet.moveToNext()) {
-      for (int i = 1; i <= metaData.getColumnCount(); i++) {
-        Column<?> column =
-            table.column(i - 1); // subtract 1 because results sets originate at 1 not 0
+      for (int i = 0; i < metaData.getColumnCount(); i++) {
+        Column<?> column = table.column(i);
+
+        // subtract 1 because results sets originate at 1 not 0
         if (column instanceof ShortColumn) {
           appendToColumn(column, resultSet, resultSet.getShort(i));
         } else if (column instanceof IntColumn) {
@@ -114,11 +114,16 @@ public class GeoPackageReader {
           appendToColumn(column, resultSet, resultSet.getFloat(i));
         } else if (column instanceof DoubleColumn) {
           appendToColumn(column, resultSet, resultSet.getDouble(i));
+        } else if (column instanceof GeometryColumn) {
+          appendToColumn(column, resultSet, resultSet.getGeometry());
+        } else if (column instanceof StringColumn) {
+          appendToColumn(column, resultSet, resultSet.getString(i));
         }
         // else if (column instanceof BooleanColumn) {
         //                    appendToColumn(column, resultSet, resultSet.getBoolean(i));
         //                }
         else {
+          // System.out.println("else "+column);
           column.appendObj(resultSet.getValue(i));
         }
       }
@@ -136,6 +141,7 @@ public class GeoPackageReader {
 
   protected static ColumnType getColumnType(int columnType, int scale, int precision) {
     ColumnType type = SQL_TYPE_TO_TABLESAW_TYPE.get(columnType);
+    System.out.println(type);
     // Try to improve on the initial type assigned to 'type' to minimize size/space of type needed.
     // For all generic numeric columns inspect closer, checking the precision and
     // scale to more accurately determine the appropriate java type to use.
